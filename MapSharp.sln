@@ -1,6 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version UNKNOWN
-# Visual Studio 2017
+Microsoft Visual Studio Solution File, Format Version 14.0
+# Visual Studio 2015
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PrimeSearch", "MapReduceExamples\PrimeSearch\PrimeSearch.csproj", "{F5336DCD-9E85-41D6-8DF6-780E120D56D2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PrimeSearchExe", "MapReduceExamples\PrimeSearchExe\PrimeSearchExe.csproj", "{B4330EC5-431C-4953-844B-A0A9E6C55DC4}"

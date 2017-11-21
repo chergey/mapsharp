@@ -1,0 +1,1 @@
+An implementation of Map-Reduce in C#, combining a flexible design with a simple API. Allows distributed computing in a LAN of .NET machines.
