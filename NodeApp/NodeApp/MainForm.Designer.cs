@@ -1,11 +1,4 @@
-﻿/*
- * Created by SharpDevelop.
- * User: Administrator
- * Date: 6/16/2009
- * Time: 4:09 PM
- * 
- * To change this template use Tools | Options | Coding | Edit Standard Headers.
- */
+﻿
 namespace NodeApp
 {
 	partial class MainForm

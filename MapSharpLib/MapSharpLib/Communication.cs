@@ -6,29 +6,9 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading;
 
-/*
- * Created by SharpDevelop.
- * User: Administrator
- * Date: 6/8/2009
- * Time: 12:15 AM
- * 
- * To change this template use Tools | Options | Coding | Edit Standard Headers.
- */
 
 namespace MapSharpLib
 {
-    public interface IObjectPipe<T> where T : ISerializable
-    {
-        T GetObject();
-        void PushObject(string receiver, T datum);
-    }
-
-    public interface IActor<T> where T : ISerializable
-    {
-        IActor<T> NewActor(IObjectPipe<T> op);
-        void Act();
-    }
-
     namespace Network
     {
         public class Server<T> where T : class, ISerializable

@@ -1,12 +1,3 @@
-/*
- * Created by SharpDevelop.
- * User: Administrator
- * Date: 6/8/2009
- * Time: 5:09 PM
- * 
- * To change this template use Tools | Options | Coding | Edit Standard Headers.
- */
-
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
@@ -19,17 +10,17 @@ namespace MapSharpLib
     {
         readonly JobPusher _pusher;
 
-        readonly Server<Job> _resultsReturn;
-        readonly List<Job> _results;
-        readonly string _managerIp;
-        readonly int _managerPort;
+        private readonly Server<Job> _resultsReturn;
+        private readonly List<Job> _results;
+        private readonly string _managerIp;
+        private readonly int _managerPort;
 
-        volatile int _status;
+        private volatile int _status;
 
-        readonly Dictionary<string, Job> _waitingOn;
-        readonly List<NodeDescription> _nodeStats;
-        readonly Dictionary<string, NodeDescription> _nodeStatsDic;
-        readonly ReaderWriterLockSlim _nStatsLock;
+        private readonly Dictionary<string, Job> _waitingOn;
+        private readonly List<NodeDescription> _nodeStats;
+        private readonly Dictionary<string, NodeDescription> _nodeStatsDic;
+        private readonly ReaderWriterLockSlim _nStatsLock;
 
         public MrManager(int managerPort)
         {
@@ -45,16 +36,15 @@ namespace MapSharpLib
             _nodeStats = new List<NodeDescription>();
             _nStatsLock = new ReaderWriterLockSlim();
 
-            _resultsReturn = new Server<Job>(managerPort, new MrmActor(_waitingOn, _nodeStats, _nodeStatsDic, _nStatsLock
+            _resultsReturn = new Server<Job>(managerPort, new MrmActor(_waitingOn, _nodeStats, _nodeStatsDic,
+                _nStatsLock
                 , _results, null));
         }
 
         public void Do(Job giantJob, int chunking)
         {
             _status = -1;
-
             string client = _managerIp + ":" + _managerPort;
-
             var ie = giantJob.Inputs.GetEnumerator();
             ie.MoveNext();
             bool keepGoing = true;
@@ -62,7 +52,6 @@ namespace MapSharpLib
             for (int count = 0; keepGoing; count++)
             {
                 var buff = new List<ISerializable>();
-
                 for (int i = 0; i < chunking && keepGoing; i++)
                 {
                     buff.Add(ie.Current);
@@ -76,14 +65,13 @@ namespace MapSharpLib
                 j.Inputs = buff;
                 Push(j);
             }
+
             _status = 0;
         }
 
         private void Push(Job j)
         {
             string node = _pusher.Push(j);
-
-
             _nStatsLock.EnterWriteLock();
 
             try
@@ -101,7 +89,6 @@ namespace MapSharpLib
             {
                 _nStatsLock.ExitWriteLock();
             }
-
         }
 
         public bool IsDone() => _status == 0 && _waitingOn.Count == 0;
@@ -128,7 +115,6 @@ namespace MapSharpLib
 
         private void UpdateNodeStats(IList<string> nodelist)
         {
-
             _nStatsLock.EnterWriteLock();
 
             try
@@ -141,6 +127,7 @@ namespace MapSharpLib
                         _nodeStatsDic.Remove(k);
                     }
                 }
+
                 foreach (string n in nodelist)
                 {
                     if (!_nodeStatsDic.ContainsKey(n))
@@ -155,7 +142,6 @@ namespace MapSharpLib
             {
                 _nStatsLock.ExitWriteLock();
             }
-
         }
 
         public IList<NodeDescription> NodeStats
@@ -163,7 +149,6 @@ namespace MapSharpLib
             get
             {
                 List<NodeDescription> retVal;
-
                 _nStatsLock.EnterReadLock();
 
                 try
@@ -266,97 +251,8 @@ namespace MapSharpLib
                     retVal = new List<Job>(_results);
                     _results.Clear();
                 }
+
                 return retVal;
-            }
-        }
-    }
-
-    public class NodeDescription
-    {
-        readonly string _ipaddress;
-        readonly int _port;
-        readonly List<string> _workingOn;
-
-        public NodeDescription(string node, List<string> pendingWork)
-        {
-            string[] a = node.Split(':');
-            _ipaddress = a[0];
-            _port = int.Parse(a[1]);
-            _workingOn = pendingWork ?? new List<string>();
-        }
-
-        public string Paddress => _ipaddress;
-
-        public int Port => _port;
-
-        public string[] PendingWork => _workingOn.ToArray();
-
-        public override string ToString()
-        {
-            string retVal = "Node " + _ipaddress + ":" + _port + "-Working on ";
-            foreach (string s in PendingWork)
-                retVal += s + ";";
-            return retVal;
-        }
-    }
-
-    class MrmActor : IActor<Job>
-    {
-        readonly IObjectPipe<Job> _op;
-        readonly Dictionary<string, Job> _waitOn;
-        readonly List<Job> _results;
-        readonly List<NodeDescription> _nStats;
-        readonly Dictionary<string, NodeDescription> _nStatsDic;
-        readonly ReaderWriterLockSlim _nStatsLock;
-
-        public MrmActor(Dictionary<string, Job> waitOn,
-            List<NodeDescription> nStats,
-            Dictionary<string, NodeDescription> nStatsDic,
-            ReaderWriterLockSlim nStatsLock,
-            List<Job> results,
-            IObjectPipe<Job> op)
-        {
-            _nStats = nStats;
-            _nStatsDic = nStatsDic;
-            _nStatsLock = nStatsLock;
-            _op = op;
-            _waitOn = waitOn;
-            _results = results;
-        }
-
-        public IActor<Job> NewActor(IObjectPipe<Job> op)
-        {
-            return new MrmActor(_waitOn, _nStats, _nStatsDic, _nStatsLock, _results, op);
-        }
-
-        public void Act()
-        {
-            Job j = _op.GetObject();
-
-            _nStatsLock.EnterWriteLock();
-            try
-            {
-                _waitOn.Remove(j.JobName);
-                string node = j.GetAtt("workNode");
-
-                var nd = _nStatsDic[node];
-
-                var l = new List<string>(nd.PendingWork);
-                l.Remove(j.JobName);
-                var newNodeDesc = new NodeDescription(node, l);
-
-                _nStatsDic[node] = newNodeDesc;
-                _nStats.Remove(nd);
-                _nStats.Add(newNodeDesc);
-            }
-            finally
-            {
-                _nStatsLock.ExitWriteLock();
-            }
-
-            lock (_results)
-            {
-                _results.Add(j);
             }
         }
     }
