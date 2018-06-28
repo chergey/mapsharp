@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PrimeSearch", "MapReduceExa
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PrimeSearchExe", "MapReduceExamples\PrimeSearchExe\PrimeSearchExe.csproj", "{B4330EC5-431C-4953-844B-A0A9E6C55DC4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapSharpLib", "MapSharpLib\MapSharpLib\MapSharpLib.csproj", "{3AAAC9F3-FDDF-4043-884F-05A8842E9EFC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapSharpLib", "MapSharpLib\MapSharpLib.csproj", "{3AAAC9F3-FDDF-4043-884F-05A8842E9EFC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleNodeApp", "NodeApp\ConsoleNodeApp\ConsoleNodeApp.csproj", "{4CB5724A-69DB-4459-A861-110C013CB14E}"
 EndProject
