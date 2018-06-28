@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Windows.Forms;
 using MapSharpLib;
 
@@ -20,9 +19,7 @@ namespace NodeApp
             // The InitializeComponent() call is required for Windows Forms designer support.
             //
             InitializeComponent();
-
             _nodes = new Dictionary<int, MrNetworkNode>();
-
             //
             // TODO: Add constructor code after the InitializeComponent() call.
             //

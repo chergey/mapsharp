@@ -50,9 +50,6 @@
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
   <ItemGroup>
-    <Reference Include="MapSharpLib">
-      <HintPath>..\..\MapSharpLib\MapSharpLib\bin\Debug\MapSharpLib.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -71,6 +68,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\MapSharpLib\MapSharpLib.csproj">
+      <Project>{3aaac9f3-fddf-4043-884f-05a8842e9efc}</Project>
+      <Name>MapSharpLib</Name>
+    </ProjectReference>
     <ProjectReference Include="..\PrimeSearch\PrimeSearch.csproj">
       <Project>{F5336DCD-9E85-41D6-8DF6-780E120D56D2}</Project>
       <Name>PrimeSearch</Name>
@@ -78,12 +79,5 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
   </ItemGroup>
 </Project>
