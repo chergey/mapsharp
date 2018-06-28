@@ -17,7 +17,7 @@ namespace ConsoleNodeApp
 		{
 			Console.WriteLine("NodeApp Lives!");
 			
-			var mrnn = new MrNetworkNode(1901);
+			MrNetworkNode mrnn = new MrNetworkNode(1901);
 			
 			Console.Write("Press any key to continue . . . ");
 			Console.ReadKey(true);

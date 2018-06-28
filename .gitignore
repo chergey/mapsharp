@@ -2,4 +2,10 @@
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
-/.idea/.idea.MapSharp
+**/.idea/**
+**/.vs/**
+/BuildProcessTemplates/**
+**/bin/**
+**/obj/**
+**/UpgradeLog.htm
+**/*.csproj.user

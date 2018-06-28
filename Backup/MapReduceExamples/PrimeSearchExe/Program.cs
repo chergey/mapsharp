@@ -1,4 +1,11 @@
-﻿
+﻿/*
+ * Created by SharpDevelop.
+ * User: Administrator
+ * Date: 6/17/2009
+ * Time: 12:30 PM
+ * 
+ * To change this template use Tools | Options | Coding | Edit Standard Headers.
+ */
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -14,8 +21,8 @@ namespace PrimeSearchExe
 			Console.WriteLine("Hello PrimeSearch!");
 			
 			//You should be running a NodeApp at the same time, otherwise, nothing'll happen.
-			//var mrnn = new MrNetworkNode(1901);
-			//var mrnn2 = new MrNetworkNode(1902);
+			MrNetworkNode mrnn = new MrNetworkNode(1901);
+			MrNetworkNode mrnn2 = new MrNetworkNode(1902);
 			
 			
 			#region nodes
@@ -23,10 +30,10 @@ namespace PrimeSearchExe
 			int serverCount = 2;
 			int managerPort = 1900;
 			int firstServerPort = 1901;
-			int maxValPrime = 170000;
+			int maxValPrime = 7000;
 			
-			var mrm = new MrManager(managerPort);
-			var nodes = new List<string>();
+			MrManager mrm = new MrManager(managerPort);
+			List<string> nodes = new List<string>();
 			for(int i=0; i<serverCount;i++)
 			{
 				nodes.Add("127.0.0.1:" + (firstServerPort+i));
@@ -38,32 +45,31 @@ namespace PrimeSearchExe
 			//TODO: make it print only if the description's changed.
 			while(!mrm.IsDone())
 			{
-				var nds = mrm.NodeStats;
-                foreach (var nd in nds)
-                    Console.WriteLine(nd + "\n");
-          
+				IEnumerable<NodeDescription> nds = mrm.NodeStats;
+				foreach(NodeDescription nd in nds)
+					Console.WriteLine(nd);
 				Thread.Sleep(300);
 			}
 			
-			var finalresults = new HashSet<int>();
+			HashSet<int> finalresults = new HashSet<int>();
 			foreach(Job j in mrm.CurrentResults)
 			{
 				finalresults.UnionWith(((Wrapper<IEnumerable<int>>)(j.Results)).Value);
 			}
 			
-	
-			//if(PrimeSearch.Check.IsCorrect(maxValPrime, finalresults))
-			//	Console.WriteLine("Woot! it works!");
-			//else
-			//	Console.WriteLine("Darn! it don't work!");
-	
+			#region prove its correct
+			if(PrimeSearch.Check.IsCorrect(maxValPrime, finalresults))
+				Console.WriteLine("Woot! it works!");
+			else
+				Console.WriteLine("Darn! it don't work!");
+			#endregion
 			
 			Console.Write("Press any key to continue . . . ");
 			Console.ReadKey(true);
 			
 			mrm.Stop();
-			//mrnn.Stop();
-			//mrnn2.Stop();
+			mrnn.Stop();
+			mrnn2.Stop();
 		}
 	}
 }

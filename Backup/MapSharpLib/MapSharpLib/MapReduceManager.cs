@@ -11,7 +11,8 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Threading;
-using MapSharpLib.Network;
+using Communication;
+using Communication.Network;
 
 namespace MapSharpLib
 {
@@ -55,13 +56,13 @@ namespace MapSharpLib
 
             string client = _managerIp + ":" + _managerPort;
 
-            var ie = giantJob.Inputs.GetEnumerator();
+            IEnumerator<ISerializable> ie = giantJob.Inputs.GetEnumerator();
             ie.MoveNext();
             bool keepGoing = true;
 
             for (int count = 0; keepGoing; count++)
             {
-                var buff = new List<ISerializable>();
+                List<ISerializable> buff = new List<ISerializable>();
 
                 for (int i = 0; i < chunking && keepGoing; i++)
                 {
@@ -83,15 +84,16 @@ namespace MapSharpLib
         {
             string node = _pusher.Push(j);
 
+            #region add job to global waitingOn & node's pendingWork lists
 
             _nStatsLock.EnterWriteLock();
 
             try
             {
                 _waitingOn.Add(j.JobName, j);
-                var nd = _nodeStatsDic[node];
-                var l = new List<string>(nd.PendingWork) {j.JobName};
-                var newNodeDesc = new NodeDescription(node, l);
+                NodeDescription nd = _nodeStatsDic[node];
+                List<string> l = new List<string>(nd.PendingWork) {j.JobName};
+                NodeDescription newNodeDesc = new NodeDescription(node, l);
 
                 _nodeStatsDic[node] = newNodeDesc;
                 _nodeStats.Remove(nd);
@@ -102,9 +104,10 @@ namespace MapSharpLib
                 _nStatsLock.ExitWriteLock();
             }
 
+            #endregion
         }
 
-        public bool IsDone() => _status == 0 && _waitingOn.Count == 0;
+        public bool IsDone() => (_status == 0 && _waitingOn.Count == 0);
 
         public void Join()
         {
@@ -114,7 +117,10 @@ namespace MapSharpLib
             }
         }
 
-        public void Stop() => _resultsReturn.Stop();
+        public void Stop()
+        {
+            _resultsReturn.Stop();
+        }
 
         public IList<string> NodesList
         {
@@ -128,6 +134,7 @@ namespace MapSharpLib
 
         private void UpdateNodeStats(IList<string> nodelist)
         {
+            #region add job to global waitingOn & node's pendingWork lists
 
             _nStatsLock.EnterWriteLock();
 
@@ -156,6 +163,7 @@ namespace MapSharpLib
                 _nStatsLock.ExitWriteLock();
             }
 
+            #endregion
         }
 
         public IList<NodeDescription> NodeStats
@@ -235,6 +243,7 @@ namespace MapSharpLib
             {
                 string node;
 
+                #region get the right node to push to
 
                 _nListLock.EnterReadLock();
 
@@ -248,6 +257,7 @@ namespace MapSharpLib
                     _nListLock.ExitReadLock();
                 }
 
+                #endregion
 
                 j.SetAtt("workNode", node);
                 _aT.PushObject(node, j);
@@ -282,7 +292,10 @@ namespace MapSharpLib
             string[] a = node.Split(':');
             _ipaddress = a[0];
             _port = int.Parse(a[1]);
-            _workingOn = pendingWork ?? new List<string>();
+            if (pendingWork != null)
+                _workingOn = pendingWork;
+            else
+                _workingOn = new List<string>();
         }
 
         public string Paddress => _ipaddress;
@@ -326,7 +339,8 @@ namespace MapSharpLib
 
         public IActor<Job> NewActor(IObjectPipe<Job> op)
         {
-            return new MrmActor(_waitOn, _nStats, _nStatsDic, _nStatsLock, _results, op);
+            return new MrmActor(_waitOn, _nStats, _nStatsDic, _nStatsLock,
+                _results, op);
         }
 
         public void Act()
@@ -339,11 +353,11 @@ namespace MapSharpLib
                 _waitOn.Remove(j.JobName);
                 string node = j.GetAtt("workNode");
 
-                var nd = _nStatsDic[node];
+                NodeDescription nd = _nStatsDic[node];
 
-                var l = new List<string>(nd.PendingWork);
+                List<string> l = new List<string>(nd.PendingWork);
                 l.Remove(j.JobName);
-                var newNodeDesc = new NodeDescription(node, l);
+                NodeDescription newNodeDesc = new NodeDescription(node, l);
 
                 _nStatsDic[node] = newNodeDesc;
                 _nStats.Remove(nd);

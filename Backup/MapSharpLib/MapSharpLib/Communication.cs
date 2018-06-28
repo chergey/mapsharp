@@ -15,7 +15,7 @@ using System.Threading;
  * To change this template use Tools | Options | Coding | Edit Standard Headers.
  */
 
-namespace MapSharpLib
+namespace Communication
 {
     public interface IObjectPipe<T> where T : ISerializable
     {
@@ -67,14 +67,14 @@ namespace MapSharpLib
             {
                 try
                 {
-                    var listener = new TcpListener(IPAddress.Parse("127.0.0.1"), _serverPort);
+                    TcpListener listener = new TcpListener(IPAddress.Parse("127.0.0.1"), _serverPort);
                     listener.Start();
                     while (true)
                     {
                         if (listener.Pending())
                         {
-                            var trans = new AsyncTransfer<T>(listener.AcceptTcpClient());
-                            var newActor = _actor.NewActor(trans);
+                            AsyncTransfer<T> trans = new AsyncTransfer<T>(listener.AcceptTcpClient());
+                            IActor<T> newActor = _actor.NewActor(trans);
                             (new Thread(newActor.Act)).Start();
                         }
                         else
@@ -83,9 +83,9 @@ namespace MapSharpLib
                         }
                     }
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
-                    Console.WriteLine(ex.Message);
+                    //Console.WriteLine(ex.Message);
                 }
             }
         }
@@ -102,7 +102,7 @@ namespace MapSharpLib
 
             public AsyncTransfer(TcpClient tclient)
             {
-                var aR = new AsyncReceiver(tclient, this);
+                AsyncReceiver aR = new AsyncReceiver(tclient, this);
                 _aT = new Thread(aR.Receive);
                 _aT.Start();
             }
@@ -120,8 +120,8 @@ namespace MapSharpLib
 
                 public void Receive()
                 {
-                    var s = _tClient.GetStream();
-                    var bf = new BinaryFormatter();
+                    Stream s = _tClient.GetStream();
+                    BinaryFormatter bf = new BinaryFormatter();
                     try
                     {
                         _parent._finalObject = (T) bf.Deserialize(s);
@@ -130,7 +130,6 @@ namespace MapSharpLib
                     {
                         Console.WriteLine(e.ToString());
                     }
-
                     s.Close();
                 }
             }
@@ -149,16 +148,16 @@ namespace MapSharpLib
             private static void PushObj(string receiver, T datum)
             {
                 string[] sA = receiver.Split(':');
-                var ap = new AsyncPusher(sA[0], int.Parse(sA[1]), datum);
+                AsyncPusher ap = new AsyncPusher(sA[0], int.Parse(sA[1]), datum);
                 var pT = new Thread(ap.AsyncPush);
                 pT.Start();
             }
 
             private class AsyncPusher
             {
-                private readonly string _ip;
-                private readonly int _port;
-                private readonly T _o;
+                string _ip;
+                int _port;
+                T _o;
 
                 public AsyncPusher(string ip, int port, T o)
                 {
@@ -169,7 +168,7 @@ namespace MapSharpLib
 
                 public void AsyncPush()
                 {
-                    var tc = new TcpClient();
+                    TcpClient tc = new TcpClient();
                     for (int i = 0; !tc.Connected && i < 200; i++)
                     {
                         try
@@ -181,10 +180,9 @@ namespace MapSharpLib
                             Thread.Sleep(200);
                         }
                     }
+                    Stream s = tc.GetStream();
 
-                    var s = tc.GetStream();
-
-                    var bf = new BinaryFormatter();
+                    BinaryFormatter bf = new BinaryFormatter();
                     bf.Serialize(s, _o);
                     s.Flush();
                     tc.Close();

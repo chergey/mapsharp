@@ -21,13 +21,12 @@ namespace PrimeSearch
                     return new Wrapper<int>(0);
                 }
             }
-
             return new Wrapper<int>(x);
         }
 
         public ISerializable ReduceFunction(IEnumerable<ISerializable> ie)
         {
-            var res = new HashSet<int>();
+            HashSet<int> res = new HashSet<int>();
             foreach (ISerializable o in ie)
             {
                 //This try/catch is for handling both individual ints and collections of ints.
@@ -39,11 +38,10 @@ namespace PrimeSearch
                 }
                 catch
                 {
-                    var ss = ((Wrapper<HashSet<int>>) o).Value;
+                    HashSet<int> ss = ((Wrapper<HashSet<int>>) o).Value;
                     res.UnionWith(ss);
                 }
             }
-
             return new Wrapper<IEnumerable<int>>(res);
         }
     }
@@ -56,7 +54,7 @@ namespace PrimeSearch
                 "Prime Search Job",
                 null,
                 GetAssemblyBytes("PrimeSearch.dll"),
-                "PrimeSearch.PrimeSearchMr",
+                "PrimeSearch.PrimeSearchMR",
                 ExampleEnum(max));
         }
 
@@ -79,7 +77,7 @@ namespace PrimeSearch
         }
     }
 
-    public static class Check
+    public class Check
     {
         public static bool IsCorrect(int max, IEnumerable<int> list)
         {
@@ -191,15 +189,15 @@ namespace PrimeSearch
 
             #endregion
 
-            var inputList = new List<int>(list);
+            List<int> inputList = new List<int>(list);
             for (int i = 0; first1000Primes[i] <= max; i++)
             {
                 if (!inputList.Contains(first1000Primes[i]))
                     return false;
                 inputList.Remove(first1000Primes[i]);
             }
-
             return !(inputList.Count > 0);
+     
         }
     }
 }

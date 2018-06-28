@@ -1,0 +1,24 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+# SharpDevelop 3.1.0.4077
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PrimeSearch", "PrimeSearch\PrimeSearch.csproj", "{F5336DCD-9E85-41D6-8DF6-780E120D56D2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PrimeSearchExe", "PrimeSearchExe\PrimeSearchExe.csproj", "{B4330EC5-431C-4953-844B-A0A9E6C55DC4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F5336DCD-9E85-41D6-8DF6-780E120D56D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F5336DCD-9E85-41D6-8DF6-780E120D56D2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F5336DCD-9E85-41D6-8DF6-780E120D56D2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F5336DCD-9E85-41D6-8DF6-780E120D56D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B4330EC5-431C-4953-844B-A0A9E6C55DC4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B4330EC5-431C-4953-844B-A0A9E6C55DC4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B4330EC5-431C-4953-844B-A0A9E6C55DC4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B4330EC5-431C-4953-844B-A0A9E6C55DC4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+EndGlobal
