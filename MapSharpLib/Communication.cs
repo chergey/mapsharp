@@ -16,9 +16,9 @@ namespace MapSharpLib
             private readonly Listener<T> _listener;
             private readonly Thread _listenerThread;
 
-            public Server(int port, IActor<T> actor)
+            public Server(string host, int port, IActor<T> actor)
             {
-                _listener = new Listener<T>(port, actor);
+                _listener = new Listener<T>(host, port, actor);
                 _listenerThread = new Thread(_listener.Run);
                 _listenerThread.Start();
             }
@@ -33,9 +33,11 @@ namespace MapSharpLib
         {
             private readonly int _serverPort;
             private readonly IActor<T> _actor;
+            private readonly string _host;
 
-            public Listener(int port, IActor<T> actor)
+            public Listener(string host, int port, IActor<T> actor)
             {
+                _host = host;
                 _serverPort = port;
                 _actor = actor;
             }
@@ -47,7 +49,7 @@ namespace MapSharpLib
             {
                 try
                 {
-                    var listener = new TcpListener(IPAddress.Parse("127.0.0.1"), _serverPort);
+                    var listener = new TcpListener(IPAddress.Parse(_host), _serverPort);
                     listener.Start();
                     while (true)
                     {
@@ -55,7 +57,7 @@ namespace MapSharpLib
                         {
                             var trans = new AsyncTransfer<T>(listener.AcceptTcpClient());
                             var newActor = _actor.NewActor(trans);
-                            (new Thread(newActor.Act)).Start();
+                            new Thread(newActor.Act).Start();
                         }
                         else
                         {

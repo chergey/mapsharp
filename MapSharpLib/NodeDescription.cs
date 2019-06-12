@@ -4,19 +4,19 @@ namespace MapSharpLib
 {
     public class NodeDescription
     {
-        readonly string _ipaddress;
+        readonly string _ipAddress;
         readonly int _port;
         readonly List<string> _workingOn;
 
         public NodeDescription(string node, List<string> pendingWork)
         {
             string[] a = node.Split(':');
-            _ipaddress = a[0];
+            _ipAddress = a[0];
             _port = int.Parse(a[1]);
             _workingOn = pendingWork ?? new List<string>();
         }
 
-        public string Paddress => _ipaddress;
+        public string Paddress => _ipAddress;
 
         public int Port => _port;
 
@@ -24,7 +24,7 @@ namespace MapSharpLib
 
         public override string ToString()
         {
-            string retVal = "Node " + _ipaddress + ":" + _port + "-Working on ";
+            string retVal = "Node " + _ipAddress + ":" + _port + "-Working on ";
             foreach (string s in PendingWork)
                 retVal += s + ";";
             return retVal;

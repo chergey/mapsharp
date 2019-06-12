@@ -10,30 +10,33 @@ namespace MapSharpLib
 {
     public class MrNetworkNode
     {
-        private readonly Server<Job> _ss;
-        private readonly MrnActor _m;
+        private readonly Server<Job> _server;
+        private readonly MrnActor _actor;
+        private readonly string _host;
 
-        public MrNetworkNode(int port, Action<object> callback)
+        public MrNetworkNode(string host, int port, Action<object> callback)
         {
-            _m = new MrnActor(new AsyncTransfer<Job>(), null, callback);
-            _ss = new Server<Job>(port, _m);
+            _host = host;
+            _actor = new MrnActor(new AsyncTransfer<Job>(), null, callback);
+            _server = new Server<Job>(_host, port, _actor);
         }
 
-        public MrNetworkNode(int port)
+        public MrNetworkNode(string host, int port)
         {
-            _m = new MrnActor(new AsyncTransfer<Job>(), null);
-            _ss = new Server<Job>(port, _m);
+            _host = host;
+            _actor = new MrnActor(new AsyncTransfer<Job>(), null);
+            _server = new Server<Job>(host, port, _actor);
         }
 
         public void Stop()
         {
-            _m.Stop();
-            _ss.Stop();
+            _actor.Stop();
+            _server.Stop();
         }
 
         public void AddListener(Action<object> callback)
         {
-            _m.SetCallback(callback);
+            _actor.SetCallback(callback);
         }
     }
 
@@ -72,16 +75,12 @@ namespace MapSharpLib
 
     public class MrnActor : IActor<Job>
     {
-        readonly IObjectPipe<Job> _pipe;
-        volatile Queue<Job> _wq;
-        readonly Thread[] _threads;
+        private readonly IObjectPipe<Job> _pipe;
+        private volatile Queue<Job> _wq;
+        private readonly Thread[] _threads;
         private Action<object> _callback;
 
-        public MrnActor(IObjectPipe<Job> dp, Queue<Job> workQueue) : this(dp, workQueue, null)
-        {
-        }
-
-        public MrnActor(IObjectPipe<Job> dp, Queue<Job> workQueue, Action<object> callback)
+        public MrnActor(IObjectPipe<Job> dp, Queue<Job> workQueue, Action<object> callback = null)
         {
             _callback = callback;
             if (workQueue == null)
@@ -91,10 +90,10 @@ namespace MapSharpLib
                 this._wq = new Queue<Job>();
 
                 //HACK: Hard-coded variable: 2 threads per Node
-                int numthreads = 2;
+                int numThreads = 2;
 
-                _threads = new Thread[numthreads];
-                for (int i = 0; i < numthreads; i++)
+                _threads = new Thread[numThreads];
+                for (int i = 0; i < numThreads; i++)
                 {
                     _threads[i] = new Thread(this.Worker);
                     _threads[i].Start();
@@ -118,16 +117,16 @@ namespace MapSharpLib
             {
                 if (_wq != null && _wq.Count > 0)
                 {
-                    Job workjob = null;
+                    Job workJob = null;
                     lock (_wq)
                     {
                         if (_wq.Count > 0)
-                            workjob = _wq.Dequeue();
+                            workJob = _wq.Dequeue();
                     }
 
-                    if (workjob != null)
+                    if (workJob != null)
                     {
-                        Job j = MrNode.Run(workjob);
+                        Job j = MrNode.Run(workJob);
                         _callback?.Invoke($"Executing job {j.JobName}");
                         _pipe.PushObject(j.Client, j);
                     }
@@ -156,13 +155,13 @@ namespace MapSharpLib
 
     public static class DllLoader
     {
-        public static Type LoadDll(string dlLpath, string mRclass)
+        public static Type LoadDll(string dllPath, string mRclass)
         {
             try
             {
-                FileInfo fi = new FileInfo(dlLpath);
-                string fullDlLpath = fi.FullName;
-                Assembly a = Assembly.LoadFile(fullDlLpath);
+                var fi = new FileInfo(dllPath);
+                string fullDllPath = fi.FullName;
+                var a = Assembly.LoadFile(fullDllPath);
                 Type t = a.GetType(mRclass);
                 return t;
             }
@@ -177,7 +176,7 @@ namespace MapSharpLib
         {
             try
             {
-                Assembly a = Assembly.Load(rawAssembly);
+                var a = Assembly.Load(rawAssembly);
                 Type t = a.GetType(mRclass);
                 return t;
             }

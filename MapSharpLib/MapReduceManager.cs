@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Threading;
@@ -8,7 +7,7 @@ namespace MapSharpLib
 {
     public class MrManager
     {
-        readonly JobPusher _pusher;
+        private readonly JobPusher _pusher;
 
         private readonly Server<Job> _resultsReturn;
         private readonly List<Job> _results;
@@ -22,10 +21,9 @@ namespace MapSharpLib
         private readonly Dictionary<string, NodeDescription> _nodeStatsDic;
         private readonly ReaderWriterLockSlim _nStatsLock;
 
-        public MrManager(int managerPort)
+        public MrManager(string host, int managerPort)
         {
-            //HACK: hard coded for testing.
-            _managerIp = "127.0.0.1";
+            _managerIp = host;
 
             _managerPort = managerPort;
             _pusher = new JobPusher();
@@ -36,34 +34,35 @@ namespace MapSharpLib
             _nodeStats = new List<NodeDescription>();
             _nStatsLock = new ReaderWriterLockSlim();
 
-            _resultsReturn = new Server<Job>(managerPort, new MrmActor(_waitingOn, _nodeStats, _nodeStatsDic,
-                _nStatsLock
-                , _results, null));
+            _resultsReturn = new Server<Job>(host, managerPort, new MrmActor(_waitingOn, _nodeStats, _nodeStatsDic,
+                _nStatsLock, _results, null));
         }
 
         public void Do(Job giantJob, int chunking)
         {
             _status = -1;
             string client = _managerIp + ":" + _managerPort;
-            var ie = giantJob.Inputs.GetEnumerator();
-            ie.MoveNext();
-            bool keepGoing = true;
-
-            for (int count = 0; keepGoing; count++)
+            using (var ie = giantJob.Inputs.GetEnumerator())
             {
-                var buff = new List<ISerializable>();
-                for (int i = 0; i < chunking && keepGoing; i++)
-                {
-                    buff.Add(ie.Current);
-                    keepGoing = ie.MoveNext();
-                }
+                ie.MoveNext();
+                bool keepGoing = true;
 
-                string jobname = giantJob.JobName + " " + count;
-                Job j = giantJob.Clone();
-                j.JobName = jobname;
-                j.Client = client;
-                j.Inputs = buff;
-                Push(j);
+                for (int count = 0; keepGoing; count++)
+                {
+                    var buff = new List<ISerializable>();
+                    for (int i = 0; i < chunking && keepGoing; i++)
+                    {
+                        buff.Add(ie.Current);
+                        keepGoing = ie.MoveNext();
+                    }
+
+                    string jobName = giantJob.JobName + " " + count;
+                    Job job = giantJob.Clone();
+                    job.JobName = jobName;
+                    job.Client = client;
+                    job.Inputs = buff;
+                    Push(job);
+                }
             }
 
             _status = 0;

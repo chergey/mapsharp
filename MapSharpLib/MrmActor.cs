@@ -34,19 +34,19 @@ namespace MapSharpLib
 
         public void Act()
         {
-            Job j = _op.GetObject();
+            var job = _op.GetObject();
 
             _nStatsLock.EnterWriteLock();
             try
             {
-                _waitOn.Remove(j.JobName);
-                string node = j.GetAtt("workNode");
+                _waitOn.Remove(job.JobName);
+                string node = job.GetAtt("workNode");
 
                 var nd = _nStatsDic[node];
 
-                var l = new List<string>(nd.PendingWork);
-                l.Remove(j.JobName);
-                var newNodeDesc = new NodeDescription(node, l);
+                var jobs = new List<string>(nd.PendingWork);
+                jobs.Remove(job.JobName);
+                var newNodeDesc = new NodeDescription(node, jobs);
 
                 _nStatsDic[node] = newNodeDesc;
                 _nStats.Remove(nd);
@@ -59,7 +59,7 @@ namespace MapSharpLib
 
             lock (_results)
             {
-                _results.Add(j);
+                _results.Add(job);
             }
         }
     }

@@ -28,7 +28,7 @@ namespace PrimeSearch
         public ISerializable ReduceFunction(IEnumerable<ISerializable> ie)
         {
             var res = new HashSet<int>();
-            foreach (ISerializable o in ie)
+            foreach (var o in ie)
             {
                 //This try/catch is for handling both individual ints and collections of ints.
                 try
